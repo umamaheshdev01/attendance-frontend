@@ -7,23 +7,28 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { GraduationCap, EyeIcon, EyeOffIcon, User, Lock } from 'lucide-react'
 import Link from 'next/link'
+import Cookies from 'js-cookie'
+import { useRouter } from 'next/navigation'
 
 export default function SignupComponent() {
+  const nav = useRouter()
   const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState('');
   const [studentId, setStudentId] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
+
+  const [isSigningUp, setIsSigningUp] = useState(false);
 
   const handleSignup = async () => {
     setError('');
-    setSuccessMessage('');
 
-    // Basic validation for password confirmation
+    setIsSigningUp(true);
+
     if (password !== confirmPassword) {
       setError('Passwords do not match!');
+      setIsSigningUp(false);
       return;
     }
 
@@ -36,7 +41,7 @@ export default function SignupComponent() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ name:fullName, id: parseInt(studentId, 10), password }),
+        body: JSON.stringify({ name: fullName, id: parseInt(studentId, 10), password }),
       });
 
       if (!response.ok) {
@@ -44,12 +49,14 @@ export default function SignupComponent() {
       }
 
       const data = await response.json();
-      setSuccessMessage('Signup successful! You can now log in.');
-
+  
       console.log('Signup successful!', data);
-
+      Cookies.set('myclasstoken', data.accessToken, { expires: 30 });
     } catch (err) {
       setError(err.message);
+    } finally {
+      setIsSigningUp(false);
+      nav.push('/user')
     }
   };
 
@@ -65,7 +72,6 @@ export default function SignupComponent() {
         </CardHeader>
         <CardContent className="space-y-4">
           {error && <div className="text-red-400 text-center">{error}</div>}
-          {successMessage && <div className="text-green-400 text-center">{successMessage}</div>}
           <div className="space-y-2">
             <Label htmlFor="fullName">Full Name</Label>
             <div className="relative">
@@ -101,7 +107,7 @@ export default function SignupComponent() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Create a password"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)} // Update password state
+                onChange={(e) => setPassword(e.target.value)}
               />
               <Button
                 className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
@@ -128,23 +134,26 @@ export default function SignupComponent() {
                 type={showPassword ? "text" : "password"}
                 placeholder="Confirm your password"
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)} // Update confirmPassword state
+                onChange={(e) => setConfirmPassword(e.target.value)}
               />
               <Lock className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
             </div>
           </div>
         </CardContent>
         <CardFooter className="flex flex-col space-y-4">
-          <Button className="w-full" onClick={handleSignup}>Sign up</Button>
+          <Button className="w-full" onClick={handleSignup} disabled={isSigningUp}>
+            {isSigningUp ? "Signing up..." : "Sign up"}
+          </Button>
           <div className="text-sm text-center text-gray-500">
             Already have an account?{" "}
             <Link href={'/login'} legacyBehavior>
-            <a className="text-primary underline-offset-4 transition-colors hover:underline" href="#">
-              Log in here
-            </a></Link>
+              <a className="text-primary underline-offset-4 transition-colors hover:underline" href="#">
+                Log in here
+              </a>
+            </Link>
           </div>
         </CardFooter>
       </Card>
     </div>
-  )
+  );
 }

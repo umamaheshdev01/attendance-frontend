@@ -8,8 +8,12 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { GraduationCap, EyeIcon, EyeOffIcon, User } from 'lucide-react'
 import Link from 'next/link'
 import Cookies from 'js-cookie'
+import {useUser} from '@/context/user.js'
+import { useRouter } from 'next/navigation'
 
 export default function Component() {
+  const nav = useRouter()
+  const { token, auth, updateToken } = useUser()
   const [showPassword, setShowPassword] = useState(false)
   const [studentId, setStudentId] = useState('')
   const [password, setPassword] = useState('')
@@ -39,6 +43,8 @@ export default function Component() {
       
       // Store the accessToken in a cookie for 1 month
       Cookies.set('myclasstoken', data.accessToken, { expires: 30 });
+      updateToken(data.accessToken)
+      nav.push('/user')
 
     } catch (err) {
       setError(err.message);
