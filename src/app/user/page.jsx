@@ -2,18 +2,22 @@
 import React, { useEffect } from 'react'
 import { useUser } from '@/context/user'
 import { useRouter } from 'next/navigation'
+import Main from '@/components/main'
 
 function page() {
 
-    const { token, auth, updateToken } = useUser()
+    const { token, auth, updateToken ,user } = useUser()
     const nav = useRouter()
     
     
 
   return (
     <div>
-      Logged in
-      <button onClick={()=>updateToken(null)}>Log out</button>
+      <Main main='Component' name='main'>
+     
+
+     
+      </Main>
     </div>
   )
 }
